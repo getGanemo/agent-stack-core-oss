@@ -24,16 +24,16 @@ product: getGanemo
 # shortcuts in your fork:
 #
 #   shortcuts:
-#     core:        getGanemo/agent-stack-core
+#     core:        getGanemo/agent-stack-core-oss
 #     ...
 #     my-product:  my-org/agent-stack
 # ---------------------------------------------------------------------------
 shortcuts:
-  core:        getGanemo/agent-stack-core
-  aws:         getGanemo/agent-stack-aws
-  mcp:         getGanemo/agent-stack-mcp
-  cloudflare:  getGanemo/agent-stack-cloudflare
-  research:    getGanemo/agent-stack-research
+  core:        getGanemo/agent-stack-core-oss
+  aws:         getGanemo/agent-stack-aws-oss
+  mcp:         getGanemo/agent-stack-mcp-oss
+  cloudflare:  getGanemo/agent-stack-cloudflare-oss
+  research:    getGanemo/agent-stack-research-oss
 
 # ---------------------------------------------------------------------------
 # 2. Template catalog
@@ -44,23 +44,23 @@ shortcuts:
 templates:
   - name: blank
     description: "Minimal workspace. Composes only `core`."
-    path: getGanemo/agent-stack-core/templates/blank.yml
+    path: getGanemo/agent-stack-core-oss/templates/blank.yml
 
   - name: research-spike
     description: "Investigation / spike, no product code."
-    path: getGanemo/agent-stack-research/templates/spike.yml
+    path: getGanemo/agent-stack-research-oss/templates/spike.yml
 
   - name: branding
     description: "Workspace for authoring a brand file for a product."
-    path: getGanemo/agent-stack-research/templates/branding.yml
+    path: getGanemo/agent-stack-research-oss/templates/branding.yml
 
   - name: empresarial
     description: "Generalist business project."
-    path: getGanemo/agent-stack-research/templates/empresarial.yml
+    path: getGanemo/agent-stack-research-oss/templates/empresarial.yml
 
   - name: tesis
     description: "Thesis / academic research project."
-    path: getGanemo/agent-stack-research/templates/tesis.yml
+    path: getGanemo/agent-stack-research-oss/templates/tesis.yml
 
 # ---------------------------------------------------------------------------
 # 3. Org-introspection rules (reference)
