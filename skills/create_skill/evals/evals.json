@@ -1,0 +1,57 @@
+{
+    "skill_name": "create_skill",
+    "description": "Tests que verifican que la skill create_skill produce el comportamiento correcto al guiar la creación de nuevas skills.",
+    "evals": [
+        {
+            "id": 1,
+            "name": "always-create-evals-alongside-skill",
+            "prompt": "Necesito crear una nueva skill llamada 'verify_security' que audite archivos de seguridad en módulos Odoo.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "The response creates both SKILL.md AND evals/evals.json in the same step",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "The response places the skill at .agents/skills/verify_security/SKILL.md",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "hyper-specific-description",
+            "prompt": "Crea una skill para ayudar con la creación de archivos Excel.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "The description includes explicit WHEN/WHAT/HOW trigger conditions, not a generic one-liner",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "The description mentions specific trigger keywords or file types",
+                    "weight": "normal"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "recipe-structure-not-overview",
+            "prompt": "Escribe una skill que enseñe cómo hacer override de métodos nativos en Odoo.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "The SKILL.md body is structured as sequential steps (Step 1, Step 2...) not as a general description",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "The skill includes specific rules or constraints section",
+                    "weight": "normal"
+                }
+            ]
+        }
+    ]
+}

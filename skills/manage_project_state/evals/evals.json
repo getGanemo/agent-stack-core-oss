@@ -1,0 +1,36 @@
+{
+  "name": "manage_project_state",
+  "description": "Evals for the manage_project_state skill — verify it triggers on the right tasks and skips on the wrong ones.",
+  "evals": [
+    {
+      "name": "triggers_on_new_phase_log",
+      "input": "I just closed the auth migration for Acme. Record the outcome in the project_management repo.",
+      "expected_skill_invoked": true,
+      "reason": "Chronological log entry on a product's project_management → use this skill."
+    },
+    {
+      "name": "triggers_on_initialize_new_product",
+      "input": "We're starting a new product called Foo. Initialize its project_management.",
+      "expected_skill_invoked": true,
+      "reason": "Initialization of a new product's project_management."
+    },
+    {
+      "name": "triggers_on_repo_map_update",
+      "input": "I renamed acme/project-management to acme/project_management. Update the repository map.",
+      "expected_skill_invoked": true,
+      "reason": "Structural repo change → 00_Mapa_Repositorios.md must be updated, which lives in project_management."
+    },
+    {
+      "name": "skips_on_code_readme",
+      "input": "Update the README of Acme's backend to explain how to run the tests.",
+      "expected_skill_invoked": false,
+      "reason": "Technical README of a code repo — does NOT belong in project_management. This skill should NOT activate."
+    },
+    {
+      "name": "skips_on_ephemeral_chat",
+      "input": "Explain what orchestrator/api/v2/health does.",
+      "expected_skill_invoked": false,
+      "reason": "Pure information request, no state to record."
+    }
+  ]
+}

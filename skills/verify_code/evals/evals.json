@@ -1,0 +1,173 @@
+{
+    "skill_name": "verify_code",
+    "description": "Tests para verificar que la skill verify_code detecta correctamente los patrones prohibidos y reporta las Audit Failures.",
+    "evals": [
+        {
+            "id": 1,
+            "name": "tree-view-type-without-list",
+            "prompt": "Revisa este código Python de un método _get_view en Odoo 19:\n\ndef _get_view(self, view_id=None, view_type='form', **options):\n    arch, view = super()._get_view(view_id, view_type, **options)\n    if view_type == 'tree':\n        arch = self._add_invisible_column(arch)\n    return arch, view\n\n¿Hay algún problema?",
+            "context": "Debe detectar el Audit Failure: view_type == 'tree' sin considerar 'list'.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta identifica que la condición view_type == 'tree' es un Audit Failure porque no incluye 'list'",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta propone o menciona que la condición correcta es view_type in ('tree', 'list')",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a3",
+                    "text": "La respuesta marca la auditoría como FAILED (no solo como advertencia menor)",
+                    "weight": "normal"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "sql-injection-fstring",
+            "prompt": "Encontré este código en models/account_move.py:\n\npartner_id = self.partner_id.id\nself.env.cr.execute(f\"SELECT id FROM res_partner WHERE id = {partner_id}\")\n\n¿Es correcto?",
+            "context": "Debe detectar SQL injection por uso de f-string en cr.execute.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta identifica que el uso de f-string en cr.execute es un riesgo de SQL injection",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta propone usar queries parametrizadas con %s como fix correcto",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "chart-template-ref-removed",
+            "prompt": "Nuestro test de accounting en Odoo 19 tiene este setUp:\n\nclass TestMyInvoice(AccountTestInvoicingCommon):\n    @classmethod\n    def setUpClass(cls):\n        super().setUpClass(chart_template_ref='l10n_generic_coa.configurable_chart_template')\n\n¿Hay algún problema?",
+            "context": "chart_template_ref fue removido de AccountTestInvoicingCommon en Odoo 19.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta identifica que chart_template_ref fue removido en Odoo 19 y es un Audit Failure",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta indica que el fix es llamar super().setUpClass() sin argumentos",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "manifest-version-format",
+            "prompt": "Este es el __manifest__.py de nuestro nuevo módulo:\n\n{\n    'name': 'FSM Auto Cancel',\n    'version': '1.0.0',\n    'license': 'OPL-1',\n    'maintainer': 'Acme',\n}\n\n¿Hay algún problema?",
+            "context": "La versión debe empezar con 19.0. para Odoo 19.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta detecta que la versión '1.0.0' es un Audit Failure porque no comienza con '19.0.'",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta indica que el formato correcto es '19.0.X.X.X'",
+                    "weight": "normal"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "uom-po-id-removed",
+            "prompt": "En nuestros tests de Odoo 19 tenemos esto para crear productos:\n\nproduct = self.env['product.product'].create({\n    'name': 'Test Product',\n    'type': 'product',\n    'uom_id': self.env.ref('uom.product_uom_unit').id,\n    'uom_po_id': self.env.ref('uom.product_uom_unit').id,\n})\n\n¿Hay algún problema?",
+            "context": "uom_po_id fue removido en Odoo 19 y type='product' es inválido.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta detecta que uom_po_id fue removido en Odoo 19",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta detecta que type='product' es un valor inválido en Odoo 19",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "currency-data-removed",
+            "prompt": "En un test de Odoo 19 encontré este código:\n\ncurrency = self.currency_data['currency']\nprice = 100 * currency.rate\n\n¿Es correcto?",
+            "context": "currency_data['currency'] fue removido en Odoo 19, se usa company_data['currency'].",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta identifica que currency_data['currency'] fue removido en Odoo 19 y es un Audit Failure",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta sugiere usar company_data['currency'] como reemplazo correcto",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "name": "no-autofix-complex-issues",
+            "prompt": "Encuentra todos los problemas en este archivo models/project_task.py que tiene 300 líneas con lógica compleja de herencia. Corrígelos directamente en el código.",
+            "context": "La skill dice: no auto-fix a menos que sea completamente trivial. Prefer reporting.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta reporta los problemas encontrados en lugar de aplicar fixes directamente sin más",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta menciona el archivo y línea específica de cada problema encontrado",
+                    "weight": "normal"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "name": "domain-operator-count",
+            "prompt": "En search() tenemos este dominio:\n\n[('state', '=', 'open'), ('partner_id', '!=', False), ('amount', '>', 0)]\n\nQuiero agregar un OR entre todas las condiciones. ¿Cómo quedaría el dominio correcto con OR?",
+            "context": "N condiciones con OR necesitan N-1 operadores pipe. 3 condiciones → 2 pipes.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta indica que 3 condiciones con OR necesitan 2 operadores '|' (N-1 pipes para N condiciones)",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "El dominio propuesto en la respuesta tiene exactamente 2 operadores '|' para las 3 condiciones",
+                    "weight": "critical"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "name": "manifest-xml-ordering",
+            "prompt": "En nuestro __manifest__.py de Odoo 19 tenemos: 'data': ['views/domain_views.xml', 'views/menu_views.xml']. domain_views.xml define un submenu que tiene parent=\"menu_widget_root\", y menu_views.xml define ese menu_widget_root. ¿Hay algún problema?",
+            "context": "El orden de carga de los XML en Odoo 19 importa. Los padres deben venir antes que los hijos, sino genera ParseError / External ID not found.",
+            "assertions": [
+                {
+                    "id": "a1",
+                    "text": "La respuesta detecta que el orden de carga causará un error de 'External ID not found' o ParseError",
+                    "weight": "critical"
+                },
+                {
+                    "id": "a2",
+                    "text": "La respuesta indica que menu_views.xml debe ir antes que domain_views.xml en la lista data",
+                    "weight": "critical"
+                }
+            ]
+        }
+    ]
+}

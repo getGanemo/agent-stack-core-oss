@@ -1,0 +1,204 @@
+### Agent Workspace as Code — core stack
+#
+# This is the universal foundation. Every AWaC workspace loads this stack
+# automatically. It also hosts the **registry** that maps short stack names
+# to their full `<org>/<repo>` location, the **template catalog** that lets
+# `wsp init --template <name>` find a starter `workspace.yml`, and the
+# **org-introspection rules** consumed by `wsp scaffold-stack <org>`.
+#
+# Schema: awac/1
+#
+# This file is the public reference. Adopters typically fork agent-stack-core
+# and add their own product-stack shortcuts + templates here.
+
+product: getGanemo
+
+# ---------------------------------------------------------------------------
+# 1. Registry of stack shortcuts
+#
+# The CLI reads this to resolve short names in `workspace.yml/stacks:`.
+# Anything containing a "/" in the manifest is treated as the literal
+# `<org>/<repo>` and skips the registry.
+#
+# Public registry only ships the transversal shortcuts. Add product
+# shortcuts in your fork:
+#
+#   shortcuts:
+#     core:        getGanemo/agent-stack-core
+#     ...
+#     my-product:  my-org/agent-stack
+# ---------------------------------------------------------------------------
+shortcuts:
+  core:        getGanemo/agent-stack-core
+  aws:         getGanemo/agent-stack-aws
+  mcp:         getGanemo/agent-stack-mcp
+  cloudflare:  getGanemo/agent-stack-cloudflare
+  research:    getGanemo/agent-stack-research
+
+# ---------------------------------------------------------------------------
+# 2. Template catalog
+#
+# `wsp templates` lists these. `wsp init <name> --template <template>`
+# fetches the file at `path` and uses it as the starter `workspace.yml`.
+# ---------------------------------------------------------------------------
+templates:
+  - name: blank
+    description: "Minimal workspace. Composes only `core`."
+    path: getGanemo/agent-stack-core/templates/blank.yml
+
+  - name: research-spike
+    description: "Investigation / spike, no product code."
+    path: getGanemo/agent-stack-research/templates/spike.yml
+
+  - name: branding
+    description: "Workspace for authoring a brand file for a product."
+    path: getGanemo/agent-stack-research/templates/branding.yml
+
+  - name: empresarial
+    description: "Generalist business project."
+    path: getGanemo/agent-stack-research/templates/empresarial.yml
+
+  - name: tesis
+    description: "Thesis / academic research project."
+    path: getGanemo/agent-stack-research/templates/tesis.yml
+
+# ---------------------------------------------------------------------------
+# 3. Org-introspection rules (reference)
+#
+# `wsp scaffold-stack <org>` consumes this block to inspect a GitHub org
+# and generate a starter `agent-stack` from conventions. The rules below
+# are a *reference* implementation of a 5-category governance pattern that
+# real teams may adapt.
+#
+# Adopters typically fork core and replace this block with their own
+# governance mirror (or remove it entirely if they don't use scaffold-stack).
+# ---------------------------------------------------------------------------
+org_scaffold:
+  default_visibility: private
+
+  transversal_orgs:
+    - getGanemo
+
+  # Cat A — operational/governance repos every product should have.
+  category_a_governance:
+    mandatory: true
+    repos:
+      - name: project_management
+        naming: snake_case
+        branch_default: main
+        visibility: private
+        description_pattern: "<Product> — internal project management, roadmap, phase progress."
+      - name: agent-stack
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        description_pattern: "Agent stack for the <Product> product."
+      - name: infrastructure
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        description_pattern: "<Product> — Terraform (AWS account <ID> + DNS provider <domain>)"
+        description_must_include:
+          - aws_account_id
+
+  # Cat B — public surface (websites, docs).
+  category_b_public_surface:
+    mandatory: false
+    repos:
+      - name: web
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        when: when there is a marketing site for <product>
+      - name: docs
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        when: when public docs site exists
+
+  # Cat C — product code. Naming is functional, not stencil-based.
+  category_c_product_code:
+    mandatory: true_if_user_facing
+    naming_freedom: true
+    naming_rules:
+      preferred: functional_descriptive
+      acceptable: "<product>-<layer>"
+      forbidden_names: [code, app, src, main]
+    branch_default: declared_per_repo_in_agent_stack_awac_yml
+    visibility: private
+    patterns:
+      - name: monorepo
+        description: single repo with backend+frontend together
+        example_names: [platform, core, "<product>-app"]
+      - name: polirepo_by_layer
+        description: backend + frontend in separate repos
+        example_names: [orchestrator, admin, api, web]
+
+  # Cat D — optional components.
+  category_d_optional:
+    mandatory: false
+    repos:
+      - name: mcp-server
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        when: when the product exposes an MCP surface
+      - glob: "*-starter"
+        naming: kebab-case
+        branch_default: main
+        visibility: public
+        when: when published as a public sample
+
+  # Repos that are never product code in any category.
+  excluded_names:
+    - .github
+    - agent-stack
+    - infrastructure
+    - project_management
+    - docs
+    - web
+
+  default_workspace_template:
+    filename: feature.yml
+    description: "Feature in {product}."
+    stacks:
+      - core
+      - "{product}"
+
+  # Transversal-vs-product decision rules. Apply BEFORE creating any asset.
+  transversal_vs_product:
+    test_questions:
+      - "Could another product use this asset as-is?"
+      - "Does the asset codify a universal convention rather than a product-specific one?"
+      - "If two products needed it, would two copies be a mistake?"
+    if_any_yes: transversal
+    if_all_no:  product
+    asset_destination:
+      skill_universal:    getGanemo/agent-stack-core/skills/<skill>/
+      skill_topical:      getGanemo/agent-stack-<topic>/skills/<skill>/
+      skill_product:      <product>/agent-stack/skills/<skill>/
+      rule_universal:     getGanemo/agent-stack-core/rules/<rule>.md
+      rule_topical:       getGanemo/agent-stack-<topic>/rules/<rule>.md
+      rule_product:       <product>/agent-stack/rules/<rule>.md
+      workflow_universal: getGanemo/agent-stack-core/workflows/<wf>.md
+      workflow_topical:   getGanemo/agent-stack-<topic>/workflows/<wf>.md
+      workflow_product:   <product>/agent-stack/workflows/<wf>.md
+
+  org_overrides: {}
+
+# ---------------------------------------------------------------------------
+# 4. Agent context files
+#
+# Files generated at the workspace root by `wsp bootstrap` / `wsp sync`.
+# All mirrors hold the SAME content as the canonical, regenerated from
+# the active stacks plus the editable block preserved from the canonical.
+# ---------------------------------------------------------------------------
+agent_context:
+  canonical: CLAUDE.md
+  mirrors:
+    - AGENTS.md
+  # The editable hand-authored region in the canonical lives between:
+  #   <!-- @awac:editable-start -->
+  #   ...your notes here...
+  #   <!-- @awac:editable-end -->
+  # `wsp sync` preserves this block across regenerations.

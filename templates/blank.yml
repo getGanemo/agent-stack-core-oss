@@ -1,0 +1,11 @@
+# Workspace template: blank
+# The minimal valid AWaC workspace. Edit as needed.
+#
+# Usage: wsp init <name>                  (default template if --template omitted)
+#        wsp init <name> --template blank
+
+name: <CHANGE-ME>
+schema: awac/1
+
+stacks:
+  - core

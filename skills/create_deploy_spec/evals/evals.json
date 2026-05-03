@@ -1,0 +1,36 @@
+{
+  "name": "create_deploy_spec",
+  "description": "Evals for the create_deploy_spec skill — verify it triggers on first-time deploy spec authoring and skips on routine deploy execution (which is a different skill+workflow).",
+  "evals": [
+    {
+      "name": "triggers_on_no_deploy_yml",
+      "input": "I want to deploy Cobalt. I don't think it has a deploy spec yet.",
+      "expected_skill_invoked": true,
+      "reason": "Product without deploy.yml — first author it, then deploy."
+    },
+    {
+      "name": "triggers_on_new_component",
+      "input": "Acme is going to have a new component called background_worker. Add it to its deploy spec.",
+      "expected_skill_invoked": true,
+      "reason": "Extending an existing deploy.yml with a new component."
+    },
+    {
+      "name": "triggers_on_legacy_refactor",
+      "input": "Convert the legacy odoo_deploy.yml into Acme's new deploy.yml.",
+      "expected_skill_invoked": true,
+      "reason": "Refactoring legacy ad-hoc deploy script into the schema deploy/1."
+    },
+    {
+      "name": "skips_on_routine_deploy",
+      "input": "Deploy Acme now, everything is tested.",
+      "expected_skill_invoked": false,
+      "reason": "Routine deploy execution — uses use_deploy_spec rule + deploy_product workflow + wsp deploy command, not this skill."
+    },
+    {
+      "name": "skips_on_status_question",
+      "input": "What components does Acme deploy in production?",
+      "expected_skill_invoked": false,
+      "reason": "Read-only question about an existing spec, no authoring."
+    }
+  ]
+}

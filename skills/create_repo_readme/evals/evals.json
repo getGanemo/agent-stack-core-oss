@@ -1,0 +1,42 @@
+{
+  "name": "create_repo_readme",
+  "description": "Evals for the create_repo_readme skill — verify it triggers on product repo README work and skips on stack repo or sub-folder docs.",
+  "evals": [
+    {
+      "name": "triggers_on_creating_new_product_repo",
+      "input": "Create the acme/admin repo, it'll be the admin panel for the product.",
+      "expected_skill_invoked": true,
+      "reason": "New Cat C product repo — needs README + `wsp scaffold-repo --category C`."
+    },
+    {
+      "name": "triggers_on_audit_request",
+      "input": "Audit the README of widget/api, I'm not sure it follows the convention.",
+      "expected_skill_invoked": true,
+      "reason": "Existing repo audit + improvement — `wsp scaffold-repo --update`."
+    },
+    {
+      "name": "triggers_on_empty_readme_observation",
+      "input": "I just noticed acme/orchestrator has no README. What do we do?",
+      "expected_skill_invoked": true,
+      "reason": "Missing README on a Cat C repo — exact use case for this skill."
+    },
+    {
+      "name": "skips_on_stack_repo_readme",
+      "input": "Update the README of <org>/agent-stack-core to mention the new skill.",
+      "expected_skill_invoked": false,
+      "reason": "Stack repo, not product repo. Out of scope per § 1; use plain edit or wsp scaffold-stack."
+    },
+    {
+      "name": "skips_on_subfolder_doc",
+      "input": "Document the orchestrator/api/v2/ folder with a README explaining the endpoints.",
+      "expected_skill_invoked": false,
+      "reason": "Sub-folder README inside a product repo — left to the team's discretion, not covered."
+    },
+    {
+      "name": "skips_on_unrelated_readme",
+      "input": "Write a README for a standalone script I have in /tmp/.",
+      "expected_skill_invoked": false,
+      "reason": "Not a governed product repo, no category."
+    }
+  ]
+}

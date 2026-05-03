@@ -1,0 +1,48 @@
+{
+  "name": "use_wsp_cli",
+  "description": "Evals for the use_wsp_cli skill — verify the agent reaches for `wsp` on workspace-shape tasks and skips on plain code work.",
+  "evals": [
+    {
+      "name": "triggers_on_new_workspace_request",
+      "input": "I need to start a new workspace for an Acme feature.",
+      "expected_skill_invoked": true,
+      "reason": "Creating a new workspace is a wsp init + wsp bootstrap task."
+    },
+    {
+      "name": "triggers_on_drift_question",
+      "input": "I haven't touched this workspace in a week — is it up to date with upstream?",
+      "expected_skill_invoked": true,
+      "reason": "Read-only state question → wsp status."
+    },
+    {
+      "name": "triggers_on_lazy_org_scaffold",
+      "input": "We're going to start using Cobalt. Create its empty agent-stack.",
+      "expected_skill_invoked": true,
+      "reason": "Creating a lazy product's agent-stack → wsp scaffold-stack <org>."
+    },
+    {
+      "name": "triggers_on_governance_change",
+      "input": "I changed the Cat B list in governance/product-structure.md. Is there anything else to touch?",
+      "expected_skill_invoked": true,
+      "reason": "Same-PR rule between governance and awac.yml#org_scaffold; wsp governance check verifies the mirror."
+    },
+    {
+      "name": "skips_on_pure_code_edit",
+      "input": "Refactor the validate_token() function in orchestrator/src/auth.py.",
+      "expected_skill_invoked": false,
+      "reason": "Code edit inside a product repo. No workspace-shape mutation."
+    },
+    {
+      "name": "skips_on_running_tests",
+      "input": "Run the tests for Acme.",
+      "expected_skill_invoked": false,
+      "reason": "Test execution is unrelated to workspace shape."
+    },
+    {
+      "name": "skips_on_conceptual_question",
+      "input": "Explain what AWaC is.",
+      "expected_skill_invoked": false,
+      "reason": "Conceptual explanation — link to the spec rather than run wsp."
+    }
+  ]
+}
