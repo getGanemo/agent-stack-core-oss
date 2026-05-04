@@ -1,0 +1,68 @@
+{
+  "name": "discover_awac_in_fresh_workspace",
+  "description": "Evals for discover_awac_in_fresh_workspace — verify the agent activates this skill when arriving at an empty dir with a setup intent, and skips when context is already loaded or the cwd is wrong.",
+  "evals": [
+    {
+      "name": "triggers_on_empty_dir_with_setup_intent",
+      "input": "Estoy en un folder vacío. Configurá esto con AWaC para una feature de Acme.",
+      "preconditions": {
+        "workspace_yml_exists": false,
+        "agents_dir_exists": false
+      },
+      "expected_skill_invoked": true,
+      "reason": "Empty cwd + explicit AWaC setup intent + product hint → discovery flow. Must NOT infer template from the word 'Acme' alone; Step 4 still asks the user."
+    },
+    {
+      "name": "triggers_on_zero_context_wsp_request",
+      "input": "Set up wsp here.",
+      "preconditions": {
+        "workspace_yml_exists": false,
+        "agents_dir_exists": false
+      },
+      "expected_skill_invoked": true,
+      "reason": "Minimal instruction + zero context + the keyword 'wsp' is exactly the entry case this skill exists for."
+    },
+    {
+      "name": "triggers_on_folder_named_after_product",
+      "input": "Iniciá un workspace acá.",
+      "preconditions": {
+        "workspace_yml_exists": false,
+        "agents_dir_exists": false,
+        "cwd_basename": "acme-billing-2026"
+      },
+      "expected_skill_invoked": true,
+      "reason": "Trigger fires regardless of folder name. Critical: the skill MUST still ask the user for the template (Step 4) instead of inferring 'acme-feature' from the directory name.",
+      "critical_assertion": "Agent must reach Step 4 and ASK the user, not invoke `wsp init --template acme-feature` based on the folder name."
+    },
+    {
+      "name": "skips_when_workspace_yml_exists",
+      "input": "Refresh this workspace.",
+      "preconditions": {
+        "workspace_yml_exists": true,
+        "agents_dir_exists": true
+      },
+      "expected_skill_invoked": false,
+      "reason": "Workspace already exists. The right tool is `wsp sync` / `wsp status` via the use_wsp_cli skill, not the discovery flow."
+    },
+    {
+      "name": "skips_when_conceptual_question",
+      "input": "¿Qué es AWaC?",
+      "preconditions": {
+        "workspace_yml_exists": false,
+        "agents_dir_exists": false
+      },
+      "expected_skill_invoked": false,
+      "reason": "Conceptual question, no setup intent. Link to the spec; do not bootstrap a workspace."
+    },
+    {
+      "name": "skips_when_agents_already_loaded",
+      "input": "Creá un workspace para una feature de Atlas.",
+      "preconditions": {
+        "workspace_yml_exists": false,
+        "agents_dir_exists": true
+      },
+      "expected_skill_invoked": false,
+      "reason": "`.agents/` is loaded — the init_workspace workflow is already available with full context. Use that workflow directly instead of the zero-context discovery wrapper."
+    }
+  ]
+}
