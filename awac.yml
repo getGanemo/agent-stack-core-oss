@@ -115,6 +115,16 @@ org_scaffold:
         branch_default: main
         visibility: private
         when: when public docs site exists
+      - name: branding
+        naming: kebab-case
+        branch_default: main
+        visibility: private        # public is an acceptable exception when brand
+                                   # assets are meant for external distribution
+                                   # (partner kits, npm packages, third-party embeds).
+        when: every product has one — logos, color palette, typography, brand guidelines.
+              Auto-cloned by `wsp bootstrap` so workspaces have brand assets locally
+              for `web`, `docs`, marketing decks, and any agent that generates
+              branded output.
 
   # Cat C — product code. Naming is functional, not stencil-based.
   category_c_product_code:
