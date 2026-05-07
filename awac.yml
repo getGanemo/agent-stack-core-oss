@@ -100,24 +100,26 @@ org_scaffold:
         description_pattern: "<Product> — Terraform (AWS account <ID> + DNS provider <domain>)"
         description_must_include:
           - aws_account_id
-      # Optional sibling of `infrastructure` for products that separate
-      # provisioning (one-time, declarative) from runtime orchestration
-      # (per-deploy). Boundary: scripts that run once when provisioning
-      # the host (agent install, systemd units, log-rotation) live in
+      # MANDATORY sibling of `infrastructure`. Promoted from optional to
+      # mandatory: structuring the dev/ops split from product inception
+      # is far cheaper than migrating runtime out of api/ or
+      # infrastructure/ later, when the product is live and other humans
+      # already touch the repos.
+      #
+      # Boundary: scripts that run once when provisioning the host
+      # (agent install, systemd units, log-rotation) live in
       # `infrastructure`. Scripts that run per deploy / per app change
       # (compose up, proxy reload, secret pulling) live in `deploy`.
       - name: deploy
         naming: kebab-case
         branch_default: main
         visibility: private
-        optional: true
-        when: when the product justifies separating runtime orchestration
-              from provisioning. If `infrastructure` covers everything,
-              `deploy` is not created.
         description_pattern: "<Product> — runtime deploy orchestration (compose, reverse proxy, secret pulling, redeploy hooks). Consumes images published from <api repo> et al."
         # Build artifacts (Dockerfile, dependency manifests, migration
         # configs) MUST live in the repo whose code they build, NOT in
-        # `deploy`. `deploy` consumes published images by tag.
+        # `deploy`. `deploy` consumes published images by tag — the
+        # interface between dev and ops teams is the versioned image,
+        # not a shared filesystem.
         forbids:
           - "Dockerfile of another product repo"
           - "requirements.txt / package.json of another product repo"
