@@ -100,6 +100,27 @@ org_scaffold:
         description_pattern: "<Product> — Terraform (AWS account <ID> + DNS provider <domain>)"
         description_must_include:
           - aws_account_id
+      # Optional sibling of `infrastructure` for products that separate
+      # provisioning (one-time, declarative) from runtime orchestration
+      # (per-deploy). Boundary: scripts that run once when provisioning
+      # the host (agent install, systemd units, log-rotation) live in
+      # `infrastructure`. Scripts that run per deploy / per app change
+      # (compose up, proxy reload, secret pulling) live in `deploy`.
+      - name: deploy
+        naming: kebab-case
+        branch_default: main
+        visibility: private
+        optional: true
+        when: when the product justifies separating runtime orchestration
+              from provisioning. If `infrastructure` covers everything,
+              `deploy` is not created.
+        description_pattern: "<Product> — runtime deploy orchestration (compose, reverse proxy, secret pulling, redeploy hooks). Consumes images published from <api repo> et al."
+        # Build artifacts (Dockerfile, dependency manifests, migration
+        # configs) MUST live in the repo whose code they build, NOT in
+        # `deploy`. `deploy` consumes published images by tag.
+        forbids:
+          - "Dockerfile of another product repo"
+          - "requirements.txt / package.json of another product repo"
 
   # Cat B — public surface (websites, docs).
   category_b_public_surface:
@@ -147,12 +168,25 @@ org_scaffold:
   # Cat D — optional components.
   category_d_optional:
     mandatory: false
+    # Concept: `cli` and `mcp-server` are CONSUMPTION SURFACES of the product
+    # API. Independent clients with shared contracts (independent versioning,
+    # agent-first errors with code+remediation, --json or equivalent,
+    # consultable manifest). Future SDKs by language follow the same pattern.
     repos:
+      - name: cli
+        naming: kebab-case
+        branch_default: main
+        visibility: private        # public when distributed open-source
+        when: when the product exposes a CLI surface
+        consumption_surface: true
+        description_pattern: "<Product> — command-line interface. Distributed via <medium>. Consumes <api repo>."
       - name: mcp-server
         naming: kebab-case
         branch_default: main
         visibility: private
         when: when the product exposes an MCP surface
+        consumption_surface: true
+        description_pattern: "<Product> — public MCP server for external AI agents. Consumes <api repo>."
       - glob: "*-starter"
         naming: kebab-case
         branch_default: main
